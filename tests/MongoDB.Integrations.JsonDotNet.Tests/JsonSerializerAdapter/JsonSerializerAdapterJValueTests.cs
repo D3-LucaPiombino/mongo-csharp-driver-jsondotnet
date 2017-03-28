@@ -104,17 +104,17 @@ namespace MongoDB.Integrations.JsonDotNet.Tests.JsonSerializerAdapter
         [TestCase("1.5", "{ x : 1.5 }")]
         public void Serialize_decimal_should_have_expected_result(string stringValue, string expectedResult)
         {
-            var value = new Newtonsoft.Json.Linq.JValue(decimal.Parse(stringValue));
+            var value = new Newtonsoft.Json.Linq.JValue(decimal.Parse(stringValue, System.Globalization.CultureInfo.InvariantCulture));
 
             AssertSerializesTheSame(value);
         }
 
-        [TestCase("01020304-0506-0708-090a-0b0c0d0e0f10", GuidRepresentation.Standard, "{ x : \"01020304-0506-0708-090a-0b0c0d0e0f10\" }")]
+        [TestCase("01020304-0506-0708-090a-0b0c0d0e0f10", GuidRepresentation.CSharpLegacy, "{ x : \"01020304-0506-0708-090a-0b0c0d0e0f10\" }")]
         public void Serialize_Guid_should_have_expected_result(string stringValue, GuidRepresentation guidRepresentation, string expectedResult)
         {
             var value = new Newtonsoft.Json.Linq.JValue(Guid.Parse(stringValue));
 
-            AssertSerializesTheSame(value);
+            AssertSerializesTheSame(value, guidRepresentation);
         }
 
         [TestCase(null, "{ x : null }")]
@@ -164,11 +164,11 @@ namespace MongoDB.Integrations.JsonDotNet.Tests.JsonSerializerAdapter
         }
 
         // private methods
-        private void AssertSerializesTheSame(Newtonsoft.Json.Linq.JValue value)
+        private void AssertSerializesTheSame(Newtonsoft.Json.Linq.JValue value, GuidRepresentation guidRepresentation = GuidRepresentation.Unspecified)
         {
             var subject = CreateSubject();
 
-            var result = Serialize(subject, value, mustBeNested: true);
+            var result = Serialize(subject, value, mustBeNested: true, guidRepresentation: guidRepresentation);
 
             var expectedResult = SerializeUsingNewtonsoftWriter(value, mustBeNested: true);
             result.Should().Equal(expectedResult);
