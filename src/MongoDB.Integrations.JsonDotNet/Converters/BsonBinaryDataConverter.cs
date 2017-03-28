@@ -96,7 +96,7 @@ namespace MongoDB.Integrations.JsonDotNet.Converters
                 }
                 else
                 {
-                    var jsonDotNetBsonWriter = writer as Newtonsoft.Json.Bson.BsonWriter;
+                    var jsonDotNetBsonWriter = writer as Newtonsoft.Json.Bson.BsonDataWriter;
                     if (jsonDotNetBsonWriter != null && binaryData.SubType == BsonBinarySubType.Binary)
                     {
                         jsonDotNetBsonWriter.WriteValue(binaryData.Bytes);

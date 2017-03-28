@@ -49,7 +49,7 @@ namespace MongoDB.Integrations.JsonDotNet.Tests.JsonSerializerAdapter
         protected T DeserializeUsingNewtonsoftReader<T>(byte[] bson, bool mustBeNested = false)
         {
             using (var memoryStream = new MemoryStream(bson))
-            using (var newtonsoftReader = new Newtonsoft.Json.Bson.BsonReader(memoryStream))
+            using (var newtonsoftReader = new Newtonsoft.Json.Bson.BsonDataReader(memoryStream))
             {
                 newtonsoftReader.DateTimeKindHandling = System.DateTimeKind.Utc;
                 newtonsoftReader.DateTimeZoneHandling = Newtonsoft.Json.DateTimeZoneHandling.Utc;
@@ -99,7 +99,7 @@ namespace MongoDB.Integrations.JsonDotNet.Tests.JsonSerializerAdapter
         protected byte[] SerializeUsingNewtonsoftWriter<T>(T value, bool mustBeNested = false)
         {
             using (var memoryStream = new MemoryStream())
-            using (var newtonsoftWriter = new Newtonsoft.Json.Bson.BsonWriter(memoryStream))
+            using (var newtonsoftWriter = new Newtonsoft.Json.Bson.BsonDataWriter(memoryStream))
             {
                 if (mustBeNested)
                 {

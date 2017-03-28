@@ -72,7 +72,7 @@ namespace MongoDB.Integrations.JsonDotNet.Tests.Converters
         protected T ReadJsonUsingNativeBsonReader<T>(Newtonsoft.Json.JsonConverter converter, byte[] bson, bool mustBeNested = false)
         {
             using (var stream = new MemoryStream(bson))
-            using (var reader = new Newtonsoft.Json.Bson.BsonReader(stream))
+            using (var reader = new Newtonsoft.Json.Bson.BsonDataReader(stream))
             {
                 return ReadJson<T>(converter, reader, mustBeNested);
             }
@@ -133,7 +133,7 @@ namespace MongoDB.Integrations.JsonDotNet.Tests.Converters
         protected byte[] WriteJsonUsingNativeBsonWriter(Newtonsoft.Json.JsonConverter converter, object value, bool mustBeNested = false)
         {
             using (var stream = new MemoryStream())
-            using (var writer = new Newtonsoft.Json.Bson.BsonWriter(stream))
+            using (var writer = new Newtonsoft.Json.Bson.BsonDataWriter(stream))
             {
                 WriteJson(converter, value, writer, mustBeNested);
                 return stream.ToArray();
