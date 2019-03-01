@@ -24,11 +24,16 @@ namespace MongoDB.Integrations.JsonDotNet
     {
         // private fields
         private readonly IBsonWriter _wrappedWriter;
+        private readonly IPropertyNamesAdapter _propertyNameBinder;
 
         // constructors
-        public BsonWriterAdapter(IBsonWriter wrappedWriter)
+        public BsonWriterAdapter(
+            IBsonWriter wrappedWriter,
+            IPropertyNamesAdapter propertyNameBinder = null
+        )
         {
             _wrappedWriter = wrappedWriter;
+            _propertyNameBinder = propertyNameBinder;
         }
 
         // public properties
@@ -152,6 +157,7 @@ namespace MongoDB.Integrations.JsonDotNet
         public override void WritePropertyName(string name)
         {
             base.WritePropertyName(name);
+            name = _propertyNameBinder?.WriteName(name) ?? name;
             _wrappedWriter.WriteName(name);
         }
 

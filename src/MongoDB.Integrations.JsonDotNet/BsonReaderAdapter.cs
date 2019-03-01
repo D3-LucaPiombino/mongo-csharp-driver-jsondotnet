@@ -25,11 +25,16 @@ namespace MongoDB.Integrations.JsonDotNet
     {
         // private fields
         private readonly IBsonReader _wrappedReader;
+        private readonly IPropertyNamesAdapter _propertyNameBinder;
 
         // constructors
-        public BsonReaderAdapter(IBsonReader wrappedReader)
+        public BsonReaderAdapter(
+            IBsonReader wrappedReader, 
+            IPropertyNamesAdapter propertyNameBinder = null
+        )
         {
             _wrappedReader = wrappedReader;
+            _propertyNameBinder = propertyNameBinder;
         }
 
         // public properties
@@ -84,6 +89,7 @@ namespace MongoDB.Integrations.JsonDotNet
 
                 case BsonReaderState.Name:
                     var name = _wrappedReader.ReadName();
+                    name = _propertyNameBinder?.ReadName(name) ?? name;
                     SetCurrentToken(Newtonsoft.Json.JsonToken.PropertyName, name);
                     return true;
 

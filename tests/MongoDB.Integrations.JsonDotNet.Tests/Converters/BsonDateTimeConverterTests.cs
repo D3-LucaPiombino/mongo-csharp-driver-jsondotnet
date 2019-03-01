@@ -118,7 +118,7 @@ namespace MongoDB.Integrations.JsonDotNet.Tests.Converters
 
             Action action = () => { var _ = ReadJsonUsingNativeJsonReader<BsonDateTime>(subject, json); };
 
-            action.ShouldThrow<Newtonsoft.Json.JsonReaderException>();
+            action.Should().Throw<Newtonsoft.Json.JsonReaderException>();
         }
 
         [TestCase(null, "{ x : null }")]

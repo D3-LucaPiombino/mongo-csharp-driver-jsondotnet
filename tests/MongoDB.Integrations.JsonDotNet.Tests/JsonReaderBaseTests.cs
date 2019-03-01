@@ -131,7 +131,7 @@ namespace MongoDB.Integrations.JsonDotNet.Tests
 
             Action action = () => { var result = subject.ReadAsBytes(); };
 
-            action.ShouldThrow<Newtonsoft.Json.JsonReaderException>();
+            action.Should().Throw<Newtonsoft.Json.JsonReaderException>();
         }
 
         [TestCase("", null)]
@@ -170,7 +170,7 @@ namespace MongoDB.Integrations.JsonDotNet.Tests
 
             Action action = () => { var result = subject.ReadAsDateTime(); };
 
-            action.ShouldThrow<Newtonsoft.Json.JsonReaderException>();
+            action.Should().Throw<Newtonsoft.Json.JsonReaderException>();
         }
 
         [TestCase("", null)]
@@ -209,7 +209,7 @@ namespace MongoDB.Integrations.JsonDotNet.Tests
 
             Action action = () => { var result = subject.ReadAsDateTimeOffset(); };
 
-            action.ShouldThrow<Newtonsoft.Json.JsonReaderException>();
+            action.Should().Throw<Newtonsoft.Json.JsonReaderException>();
         }
 
         [TestCase("", null)]
@@ -248,7 +248,7 @@ namespace MongoDB.Integrations.JsonDotNet.Tests
 
             Action action = () => { var result = subject.ReadAsDecimal(); };
 
-            action.ShouldThrow<Newtonsoft.Json.JsonReaderException>();
+            action.Should().Throw<Newtonsoft.Json.JsonReaderException>();
         }
 
         [TestCase("", null)]
@@ -287,7 +287,7 @@ namespace MongoDB.Integrations.JsonDotNet.Tests
 
             Action action = () => { var result = subject.ReadAsInt32(); };
 
-            action.ShouldThrow<Newtonsoft.Json.JsonReaderException>();
+            action.Should().Throw<Newtonsoft.Json.JsonReaderException>();
         }
 
         [TestCase("", null)]
@@ -325,7 +325,7 @@ namespace MongoDB.Integrations.JsonDotNet.Tests
 
             Action action = () => { var result = subject.ReadAsString(); };
 
-            action.ShouldThrow<Newtonsoft.Json.JsonReaderException>();
+            action.Should().Throw<Newtonsoft.Json.JsonReaderException>();
         }
 
         [TestCase(

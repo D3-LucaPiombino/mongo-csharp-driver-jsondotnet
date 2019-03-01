@@ -58,3 +58,4 @@ src/packages
 # Merge tool artifacts
 *.cs.orig
 *.vb.orig
+/.vs/*

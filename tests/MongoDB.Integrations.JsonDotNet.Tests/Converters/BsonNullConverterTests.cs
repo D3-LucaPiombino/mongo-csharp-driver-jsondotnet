@@ -90,7 +90,7 @@ namespace MongoDB.Integrations.JsonDotNet.Tests.Converters
 
             Action action = () => { var _ = ReadJsonUsingNativeJsonReader<BsonNull>(subject, json); };
 
-            action.ShouldThrow<Newtonsoft.Json.JsonReaderException>();
+            action.Should().Throw<Newtonsoft.Json.JsonReaderException>();
         }
 
         [TestCase(null, "{ x : null }")] // TODO: should C# null have a different representation?
