@@ -22,7 +22,7 @@ namespace MongoDB.Integrations.JsonDotNet
     /// <summary>
     /// Allow to customized property names when an 
     /// object is serialized or deserialized.
-    /// Note that this is called erlier thant converters, 
+    /// Note that this is called earlier than converters, 
     /// and so it allow to do stuff that is impossible with a 
     /// converter.
     /// An example is changing the name of the property 

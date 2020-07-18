@@ -23,6 +23,7 @@ using MongoDB.Bson.Serialization;
 
 namespace MongoDB.Integrations.JsonDotNet
 {
+    using JsonSerializer = Newtonsoft.Json.JsonSerializer;
     /// <summary>
     /// Represents a serialization provider for Json.NET.
     /// </summary>
@@ -31,7 +32,7 @@ namespace MongoDB.Integrations.JsonDotNet
     {
         // private fields
         private readonly Func<Type, bool> _predicate;
-        private readonly Newtonsoft.Json.JsonSerializer _wrappedSerializer;
+        private readonly JsonSerializer _wrappedSerializer;
 
         // constructors
         /// <summary>
@@ -41,15 +42,11 @@ namespace MongoDB.Integrations.JsonDotNet
         /// <param name="wrappedSerializer">The wrapped serializer.</param>
         public JsonDotNetSerializationProvider(
             Func<Type, bool> predicate, 
-            Newtonsoft.Json.JsonSerializer wrappedSerializer = null
+            JsonSerializer wrappedSerializer = null
         )
         {
-            if (predicate == null)
-            {
-                throw new ArgumentNullException(nameof(predicate));
-            }
-            _predicate = predicate;
-            _wrappedSerializer = wrappedSerializer ?? JsonSerializerAdapterHelper.CreateDefaultJsonSerializer();
+            _predicate = predicate ?? throw new ArgumentNullException(nameof(predicate));
+            _wrappedSerializer = wrappedSerializer ?? JsonSerializerAdapter.CreateDefaultJsonSerializer();
         }
 
         // public properties
@@ -70,7 +67,7 @@ namespace MongoDB.Integrations.JsonDotNet
         /// <value>
         /// The wrapped serializer.
         /// </value>
-        public Newtonsoft.Json.JsonSerializer WrappedSerializer
+        public JsonSerializer WrappedSerializer
         {
             get { return _wrappedSerializer; }
         }
@@ -85,7 +82,7 @@ namespace MongoDB.Integrations.JsonDotNet
             }
 
             var serializerType = typeof(JsonSerializerAdapter<>).MakeGenericType(type);
-            var constructorInfo = serializerType.GetConstructor(new Type[] { typeof(Newtonsoft.Json.JsonSerializer) });
+            var constructorInfo = serializerType.GetConstructor(new Type[] { typeof(JsonSerializer) });
             var serializer = (IBsonSerializer)constructorInfo.Invoke(new object[] { _wrappedSerializer });
             return serializer;
         }

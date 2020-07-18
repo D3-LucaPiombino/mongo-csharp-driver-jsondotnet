@@ -15,6 +15,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using FluentAssertions;
 using MongoDB.Bson;
 using NSubstitute;
@@ -184,6 +185,26 @@ namespace MongoDB.Integrations.JsonDotNet.Tests.JsonSerializerAdapter
         }
     }
 
+
+    namespace External
+    {
+        struct Struct
+        {
+            public string PropInStruct { get; set; }
+        }
+
+        class Base
+        {
+            public string Id { get; set; }
+            public Struct Value { get; set; }
+        }
+
+        class Derived : Base
+        {
+            public string DerivedProp { get; set; }
+        }
+    }
+
     [TestFixture]
     public class JsonSerializerAdapterClassWithPolymorphicTypeTests : JsonSerializerAdapterTestsBase
     {
@@ -192,13 +213,13 @@ namespace MongoDB.Integrations.JsonDotNet.Tests.JsonSerializerAdapter
             public string PropInStruct { get; set; }
         }
 
-        private class Base
+        public class Base
         {
             public string Id { get; set; }
             public Struct Value { get; set; }
         }
 
-        private class Derived : Base
+        public class Derived : Base
         {
             public string DerivedProp { get; set; }
         }
@@ -209,7 +230,7 @@ namespace MongoDB.Integrations.JsonDotNet.Tests.JsonSerializerAdapter
         }
         
         [Test]
-        public void Should_deserialize_a_list_of_heterogeneous_types_serialized_with_the_native_bson_serializer()
+        public void Should_deserialize_a_list_of_heterogeneous_types()
         {
             var container = new Container
             {
@@ -217,33 +238,135 @@ namespace MongoDB.Integrations.JsonDotNet.Tests.JsonSerializerAdapter
                 {
                     new Base{ Id = "BaseId 1" },
                     new Base{ Id = "BaseId 2", Value = new Struct{ PropInStruct = "42" } },
-                    new Derived { Id = "BaseId 3", DerivedProp = "Derived Prop 3" },
-                    new Derived { Id = "BaseId 4", DerivedProp = "Derived Prop 5" }
+                    new Derived { Id = "Derived 1", DerivedProp = "Derived Prop 3" },
+                    new Derived { Id = "Derived 2", DerivedProp = "Derived Prop 5" },
                 }
             };
 
-            var nativeSerializer = Bson.Serialization.BsonSerializer.LookupSerializer<Container>();
-            var nativeSerialized = Serialize(nativeSerializer, container);
 
-
-            var serializerAdapter = CreateSerializer<Container>(new TypeNameMap
+            var serializer = CreateSerializer<Container>(new TypeNameMap
             {
                 [typeof(Base)] =
                 {
-                    ("Base", primary: true),
+                    ("Base", direction: TypeNameMapping.Direction.All),
                 },
                 [typeof(Derived)] =
                 {
-                    ("Derived", primary: true),
+                    ("Derived", direction: TypeNameMapping.Direction.All),
                 }
             });
             
-            var deserialized = Deserialize(serializerAdapter, nativeSerialized);
+            var serialized = Serialize(serializer, container);
+            var deserialized = Deserialize(serializer, serialized);
             deserialized.Should().BeEquivalentTo(container);
         }
 
+        [Test]
+        public void Should_deserialize_different_types_with_same_name_when_overriding_the_type_key_during_deserialization()
+        {
+            var container = new Container
+            {
+                Items = new List<object>
+                {
+                    new Derived { Id = "BaseId 4", DerivedProp = "Derived Prop 5" },
+                }
+            };
 
-        
+            var container2 = new Container
+            {
+                Items = new List<object>
+                {
+                    new External.Derived { Id = "BaseId 4", DerivedProp = "Derived Prop 5" },
+                }
+            };
+
+            var customSerializer = CreateSerializer(new TypeNameMap
+            {
+                [typeof(Derived)] =
+                {
+                    ("Derived", direction: TypeNameMapping.Direction.All),
+                },
+                [typeof(External.Derived)] =
+                {
+                    ("Derived", direction: TypeNameMapping.Direction.Out),
+                    // Deserialize as External.Derived if the type name 
+                    // is 'Derived' and the scope is 'CustomScope'
+                    ("CustomScope", "Derived")
+                },
+
+                // Force the assemblyName to "CustomScope"
+                ResolveDeserializationTypeName = key => (assemblyName: "CustomScope", key.name)
+            });
+
+            using (customSerializer.Push())
+            {
+                // Should work also if the serialized is retrieved through a lookup in the
+                // mongodb bson serializer registry
+                var serializer = Bson.Serialization.BsonSerializer.LookupSerializer<Container>();
+                var serialized = Serialize(serializer, container);
+                // serialized as { Items = [ _t:Derived , ... ] }
+                var deserialized = Deserialize(serializer, serialized);
+                deserialized.Should().BeEquivalentTo(container2);
+            }
+        }
+
+        [Test]
+        public void Should_deserialize_different_types_with_same_name_in_different_scopes_using_different_serializers()
+        {
+            var container = new Container
+            {
+                Items = new List<object>
+                {
+                    new Derived { Id = "BaseId 4", DerivedProp = "Derived Prop 5" },
+                }
+            };
+
+            var container2 = new Container
+            {
+                Items = new List<object>
+                {
+                    new External.Derived { Id = "BaseId 4", DerivedProp = "Derived Prop 5" },
+                }
+            };
+
+            // Get the serializer through the standard Bson serializer
+            var serializer = Bson.Serialization.BsonSerializer.LookupSerializer<Container>();
+
+            // Create a serializer for the local scope
+            var localScopeSerializer = CreateSerializer(new TypeNameMap
+            {
+                [typeof(Derived)] =
+                {
+                    ("Derived", direction: TypeNameMapping.Direction.All),
+                }
+            });
+
+            // Create a serializer for the external scope so that we can deserialize
+            // was was previously serialized from the Derived type inot a External.Derived
+            // instance.
+            var externalScopeSerializer = CreateSerializer(new TypeNameMap
+            {
+                [typeof(External.Derived)] =
+                {
+                    ("Derived")
+                }
+            });
+
+            // push the local serializer as current
+            using (localScopeSerializer.Push())
+            {
+                // This will use localScopeSerializer
+                var serialized = Serialize(serializer, container);
+                
+                // push the external serializer as current
+                using (externalScopeSerializer.Push())
+                {
+                    // This will use externalScopeSerializer
+                    var deserialized = Deserialize(serializer, serialized);
+                    deserialized.Should().BeEquivalentTo(container2);
+                }
+            }
+        }
 
         [Test]
         public void Should_roundtrip_structs()
@@ -257,6 +380,8 @@ namespace MongoDB.Integrations.JsonDotNet.Tests.JsonSerializerAdapter
             deserialized.Should().BeEquivalentTo(instance);
         }
 
+
+        
         private Newtonsoft.Json.JsonSerializer CreateSerializer(TypeNameMap typeMap = null)
         {
             var settings = new Newtonsoft.Json.JsonSerializerSettings
@@ -265,16 +390,12 @@ namespace MongoDB.Integrations.JsonDotNet.Tests.JsonSerializerAdapter
                 SerializationBinder = new JsonCompositeSerializationBinderAdapter(
                     new DefaultPropertyNamesAdapter(),
                     typeMap: typeMap
-                ),
-                Converters =
-                {
-                    JsonDotNet.Converters.BsonValueConverter.Instance,
-                    JsonDotNet.Converters.ObjectIdConverter.Instance,
-                }
+                )
             };
 
-            var jsonSerializer = Newtonsoft.Json.JsonSerializer.Create(settings);
-
+            var jsonSerializer = Newtonsoft.Json.JsonSerializer.Create(settings)
+                .WithBsonAdapterConfiguration();
+            
             return jsonSerializer;
         }
 
@@ -282,7 +403,8 @@ namespace MongoDB.Integrations.JsonDotNet.Tests.JsonSerializerAdapter
         {
             return new JsonSerializerAdapter<T>(CreateSerializer(typeMap));
         }
-
-
     }
+
+    
 }
+

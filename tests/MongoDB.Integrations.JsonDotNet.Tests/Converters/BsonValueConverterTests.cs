@@ -65,7 +65,7 @@ namespace MongoDB.Integrations.JsonDotNet.Tests.Converters
         [TestCase("{ x : { $$date : { $$numberLong : \"0\" } } }", "{ $date : 0 }")]
         [TestCase("{ x : { $$maxKey : 1 } }", "{ $maxKey : 1 }")] // note: Json.NET can't read a BsonMaxKey
         [TestCase("{ x : { $$minKey : 1 } }", "{ $minKey : 1 }")] // note: Json.NET can't read a BsonMinKey
-        [TestCase("{ x : { $oid: \"112233445566778899aabbcc\" } }", "HexData(0, \"112233445566778899aabbcc\")")] // note: Json.NET turns ObjectId into bytes
+        
         [TestCase("{ x : { $$oid: \"112233445566778899aabbcc\" } }", "{ $oid: \"112233445566778899aabbcc\" }")]
         [TestCase("{ x : { $regex : \"abc\", $options : \"i\" } }", "\"/abc/i\"")] // note: Json.NET turns a BsonRegularExpression into a string
         [TestCase("{ x : { $$regex : \"abc\", $$options : \"i\" } }", "{ $regex : \"abc\", $options : \"i\" }")]
@@ -82,7 +82,22 @@ namespace MongoDB.Integrations.JsonDotNet.Tests.Converters
             result.Should().Be(expectedResult);
         }
 
-        
+        // NOTE: this is require a separate test because it trigger a bug in NUnit:
+        //    Incorrect format for TestCaseFilter Error: Missing '('
+        [TestCase("{ x : { $oid: \"112233445566778899aabbcc\" } }")] // note: Json.NET turns ObjectId into bytes
+        public void ReadJson_should_return_expected_result_when_using_native_bson_reader3(string json)
+        {
+            // See https://github.com/nunit/nunit3-vs-adapter/issues/691
+            var expectedResult = "HexData(0, \"112233445566778899aabbcc\")";
+
+            var subject = new BsonValueConverter();
+
+            var result = ReadJsonUsingNativeBsonReader<BsonValue>(subject, ToBson(json), mustBeNested: true);
+
+            result.Should().Be(expectedResult);
+        }
+
+
         [TestCase("null", "null")]
         [TestCase("undefined", "undefined")]
         [TestCase("0", "NumberLong(0)")]
