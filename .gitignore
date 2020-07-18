@@ -19,7 +19,7 @@ packages
 codereview.rc
 
 # FAKE artifacts
-.fake
+.tmp
 
 # GhostDoc artifacts
 CSharpDriver.sln.GhostDoc.xml

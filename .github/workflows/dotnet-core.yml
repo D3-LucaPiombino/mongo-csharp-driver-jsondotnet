@@ -1,0 +1,24 @@
+name: .NET Core
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:    
+      
+
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Fetch with --unshallow
+      run: git fetch --prune --unshallow --tags
+    - name: Run './build.sh Publish'
+      run: ./build.sh Publish
+      env:
+        GitHubToken: ${{ secrets.GITHUB_TOKEN }}

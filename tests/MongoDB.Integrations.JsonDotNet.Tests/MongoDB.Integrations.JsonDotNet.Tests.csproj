@@ -5,6 +5,7 @@
     <Product>MongoDB.Integrations.JsonDotNet.Tests</Product>
     <Copyright>Copyright ©  2015</Copyright>
     <OutputPath>bin\$(Configuration)\</OutputPath>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugType>full</DebugType>
