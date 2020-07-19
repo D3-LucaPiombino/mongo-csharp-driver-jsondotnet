@@ -47,8 +47,7 @@ class BuildDef : NukeBuild
 
     [Parameter("NuGet GitHub feed url")]
     readonly string GitHubNuGetFeedUrl = "https://nuget.pkg.github.com/d3-lucapiombino/";
-    [Parameter("GitHub User")] 
-    readonly string GitHubUser = "D3-LucaPiombino";
+    
     [Parameter("GitHub Token")] 
     readonly string GitHubToken;
 
