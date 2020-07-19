@@ -1,0 +1,9 @@
+next-version: 0.2.0
+assembly-versioning-scheme: MajorMinorPatch
+mode: Mainline
+branches:
+  master:
+    tag: ''
+    increment: Patch
+ignore:
+  sha: []
