@@ -32,7 +32,7 @@ class BuildDef : NukeBuild
 
     public static int Main () => Execute<BuildDef>(x => x.Build);
 
-    [PackageExecutable(packageId: "gpr", packageExecutable: "gpr.exe|gpr.dll")]
+    [PackageExecutable(packageId: "gpr", packageExecutable: "gpr.dll")]
     readonly Tool Gpr;
 
 
