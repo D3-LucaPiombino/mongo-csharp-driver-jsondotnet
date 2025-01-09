@@ -7,23 +7,38 @@
     <Description>Supports using Json.NET serializers with the MongoDB .NET Driver</Description>
     <Copyright>Copyright ©  2015-2016</Copyright>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
-    <Version>1.0.0-local</Version>
+    <!--<Version>1.0.0-local</Version>-->
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <DocumentationFile>bin\$(Configuration)\MongoDB.Integrations.JsonDotNet.XML</DocumentationFile>
+    
+    <!--Source Link-->
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <!--NuGet Package Props-->
+    <IsPackable>true</IsPackable>
+    <PackageId>MongoDB.Integrations.JsonDotNet</PackageId>
+    <Description>Allow to use Newtonsoft.Json as to serialize and deserialize MongoDb documents</Description>
+    <PackageTags>MongoDb serialization serializer json bson</PackageTags>
+    <RepositoryUrl>https://github.com/D3-LucaPiombino/mongo-csharp-driver-jsondotnet</RepositoryUrl>
+  </PropertyGroup>
+  
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugType>full</DebugType>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
+  
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
+    <DebugType>embedded</DebugType>
   </PropertyGroup>
+  
   <ItemGroup>
     <PackageReference Include="MongoDB.Bson" Version="2.10.4" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="Newtonsoft.Json.Bson" Version="1.0.2" />
+    
+    <!--Source Link-->
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All"/>
   </ItemGroup>
-  <!--<ItemGroup>
-    <Reference Include="Microsoft.CSharp" />
-  </ItemGroup>-->
 </Project>
