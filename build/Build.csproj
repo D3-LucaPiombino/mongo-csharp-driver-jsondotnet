@@ -12,10 +12,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+	<PackageDownload Include="gpr" Version="[0.1.294]" />
 	<PackageReference Include="Nuke.Common" Version="9.0.3" />
 	<PackageReference Include="Nuke.Components" Version="9.0.3" />
 	<PackageDownload Include="GitVersion.Tool" Version="[6.1.0]" />
-    <PackageDownload Include="gpr" Version="[0.1.224]" />
     
   </ItemGroup>
 </Project>
