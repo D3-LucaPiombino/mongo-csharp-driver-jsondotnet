@@ -143,41 +143,29 @@ class BuildDef : NukeBuild
         .Executes(() =>
         {
             
-            var packages = ArtifactsDirectory.GlobFiles("*.nupkg")
-                .NotEmpty();
+            //var packages = ArtifactsDirectory.GlobFiles("*.nupkg")
+            //    .NotEmpty();
 
-            // WHY Gpr and not dotnet nuget push?
-            //
-            // The dotnet nuget push command only works if the worker image is set to windows-latest, however, 
-            // because the start-up time of a Windows worker is significantly longer than ubuntu-latest I rather 
-            // trade an additional dependency for an overall faster CI/CD pipeline. It is a personal 
-            // choice and a trade off which I'm happy to make in this particular case (more on the benefit of 
-            // speed later).
-            foreach (var package in packages)
-            {
-                Log.Information($"Upload package {package} to {GitHubNuGetFeedUrl} using token {GitHubToken}");
+            //// WHY Gpr and not dotnet nuget push?
+            ////
+            //// The dotnet nuget push command only works if the worker image is set to windows-latest, however, 
+            //// because the start-up time of a Windows worker is significantly longer than ubuntu-latest I rather 
+            //// trade an additional dependency for an overall faster CI/CD pipeline. It is a personal 
+            //// choice and a trade off which I'm happy to make in this particular case (more on the benefit of 
+            //// speed later).
+            //foreach (var package in packages)
+            //{
+            //    Log.Information($"Upload package {package} to {GitHubNuGetFeedUrl} using token {GitHubToken}");
 
-                Gpr($"push -k {GitHubToken} {package}");
-            }
-
+            //    Gpr($"push -k {GitHubToken} {package}");
+            //}
             
-            
-            // DOES NOT WORK TODAY
-
-            //DotNet(
-            //    $"nuget add source {GitHubNuGetFeedUrl} --name github --username {GitHubUser} --password {GitHubToken} --store-password-in-clear-text"
-            //);
-
-            //DotNetNuGetPush(s => s
-            //    //.SetSource(NuGetTargetFeedUrl)
-            //    //.SetApiKey(NuGetApiKey ?? GitHubToken)
-            //    .SetSource("github")
-            //    .SetSkipDuplicate(true)
-            //    .SetTargetPath(ArtifactsDirectory / "*.nupkg")
-            //    .SetLogOutput(true)
-                
-            //); 
-            
+            DotNetNuGetPush(_ => _
+                .SetTargetPath(ArtifactsDirectory / "*.nupkg")
+                .SetSkipDuplicate(true)
+                .SetSource(GitHubNuGetFeedUrl)
+                .SetApiKey(GitHubToken)
+            );
         });
 
 
