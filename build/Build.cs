@@ -20,7 +20,7 @@ using static Nuke.Common.Tools.DotNet.DotNetTasks;
     GitHubActionsImage.UbuntuLatest,
     ImportGitHubTokenAs = nameof(GitHubToken),
     AutoGenerate = false,
-    InvokedTargets = new[] { nameof(PushPackagesToGitHub) }
+    InvokedTargets = new[] { nameof(Publish) }
 )]
 class BuildDef : NukeBuild
 {
@@ -39,16 +39,16 @@ class BuildDef : NukeBuild
     [Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")]
     readonly Configuration Configuration = IsLocalBuild ? Configuration.Debug : Configuration.Release;
 
-    [Parameter("NuGet target feed url")]
+    [Parameter("NuGet feed url")]
     readonly string NuGetTargetFeedUrl;
     
     [Parameter("NuGet ApiKey used to push packages")] 
     readonly string NuGetApiKey;
 
-    [Parameter("NuGet GitHub feed url")]
+    [Parameter("GitHub NuGet feed url (used to push nuget packages to the repository feed)")]
     readonly string GitHubNuGetFeedUrl = "https://nuget.pkg.github.com/d3-lucapiombino/";
     
-    [Parameter("GitHub Token")] 
+    [Parameter("GitHub Token (used to push nuget packages to the repository feed)")] 
     readonly string GitHubToken;
 
     [Solution] readonly Solution Solution;
@@ -62,10 +62,13 @@ class BuildDef : NukeBuild
     
     protected override void OnBuildInitialized()
     {
+        Logger.Success($"Repository {GitRepository.Identifier}");
+        Logger.Success($"Repository branch {GitRepository.Branch}");
+        Logger.Success($"Repository url {GitRepository.HttpsUrl}");
         Logger.Success($"Repository version {GitVersion.FullSemVer}");
     }
 
-    Target Clean => _ => _
+    public Target Clean => _ => _
         .Before(Restore)
         .Executes(() =>
         {
@@ -82,7 +85,7 @@ class BuildDef : NukeBuild
         });
 
     Target Compile => _ => _
-        .DependsOn(Restore)
+        .DependsOn(Clean, Restore)
         .Executes(() =>
         {
             DotNetBuild(s => s
@@ -181,7 +184,7 @@ class BuildDef : NukeBuild
             );
         });
 
-    Target Publish => _ => _
+    public Target Publish => _ => _
         .DependsOn(PushPackagesToGitHub, PushPackagesToNugetOrg)
         .Executes(() =>
         {
