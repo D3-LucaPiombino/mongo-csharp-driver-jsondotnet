@@ -122,7 +122,9 @@ namespace MongoDB.Integrations.JsonDotNet
                             var bsonReader = _wrappedReader as BsonReader;
                             if (bsonReader != null)
                             {
+#pragma warning disable CS0618 // Type or member is obsolete
                                 guidRepresentation = bsonReader.Settings.GuidRepresentation;
+#pragma warning restore CS0618 // Type or member is obsolete
                             }
                             jsonDotNetValue = GuidConverter.FromBytes(bsonBinaryData.Bytes, guidRepresentation);
                             break;

@@ -28,20 +28,19 @@ namespace MongoDB.Integrations.JsonDotNet.Tests
         }
     }
 
-    public class JTokenAssertions : ReferenceTypeAssertions<Newtonsoft.Json.Linq.JToken, JTokenAssertions>
+    public class JTokenAssertions(Newtonsoft.Json.Linq.JToken value) : ReferenceTypeAssertions<Newtonsoft.Json.Linq.JToken, JTokenAssertions>(value)
     {
-        // constructors
-        public JTokenAssertions(Newtonsoft.Json.Linq.JToken value)
-        {
-            Subject = value;
-        }
 
         // methods
         public AndConstraint<JTokenAssertions> Be(Newtonsoft.Json.Linq.JToken expected, string because = "", params object[] reasonArgs)
         {
+            var x = (Subject is { Type: Newtonsoft.Json.Linq.JTokenType.Null } && Subject.Type == expected.Type);
             Execute.Assertion
                 .BecauseOf(because, reasonArgs)
-                .ForCondition(Newtonsoft.Json.Linq.JToken.DeepEquals(Subject, expected))
+                .ForCondition(
+                    (Subject is { Type: Newtonsoft.Json.Linq.JTokenType.Null } && Subject.Type == expected.Type) ||
+                    Newtonsoft.Json.Linq.JToken.DeepEquals(Subject, expected)
+                )
                 .FailWith("Expected {context:object} to be {0}{reason}, but found {1}.", expected, Subject);
 
             return new AndConstraint<JTokenAssertions>(this);

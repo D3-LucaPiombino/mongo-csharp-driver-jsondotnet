@@ -9,16 +9,19 @@ using Nuke.Common.Tooling;
 using Nuke.Common.Tools.DotNet;
 using Nuke.Common.Tools.GitVersion;
 using Nuke.Common.Utilities.Collections;
+using Nuke.Components;
+using Serilog;
 using static Nuke.Common.IO.FileSystemTasks;
 using static Nuke.Common.IO.PathConstruction;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
 
-[CheckBuildProjectConfigurations]
+
 [UnsetVisualStudioEnvironmentVariables]
 [GitHubActions(
     "Build",
     GitHubActionsImage.UbuntuLatest,
-    ImportGitHubTokenAs = nameof(GitHubToken),
+    ImportSecrets = new[] { nameof(GitHubToken) },
+    EnableGitHubToken = true,
     AutoGenerate = false,
     InvokedTargets = new[] { nameof(Publish) }
 )]
@@ -62,10 +65,10 @@ class BuildDef : NukeBuild
     
     protected override void OnBuildInitialized()
     {
-        Logger.Success($"Repository {GitRepository.Identifier}");
-        Logger.Success($"Repository branch {GitRepository.Branch}");
-        Logger.Success($"Repository url {GitRepository.HttpsUrl}");
-        Logger.Success($"Repository version {GitVersion.FullSemVer}");
+        Log.Information($"Repository {GitRepository.Identifier}");
+        Log.Information($"Repository branch {GitRepository.Branch}");
+        Log.Information($"Repository url {GitRepository.HttpsUrl}");
+        Log.Information($"Repository version {GitVersion.FullSemVer}");
     }
 
     public Target Clean => _ => _
@@ -132,8 +135,8 @@ class BuildDef : NukeBuild
         .OnlyWhenStatic(() => GitHubNuGetFeedUrl != null && GitHubToken != null)
         .Executes(() =>
         {
-
-            var packages = GlobFiles(ArtifactsDirectory, "*.nupkg")
+            
+            var packages = ArtifactsDirectory.GlobFiles("*.nupkg")
                 .NotEmpty();
 
             // WHY Gpr and not dotnet nuget push?
@@ -145,7 +148,7 @@ class BuildDef : NukeBuild
             // speed later).
             foreach (var package in packages)
             {
-                Logger.Info($"Upload package {package} to {GitHubNuGetFeedUrl} using token {GitHubToken}");
+                Log.Information($"Upload package {package} to {GitHubNuGetFeedUrl} using token {GitHubToken}");
 
                 Gpr($"push -k {GitHubToken} {package}");
             }

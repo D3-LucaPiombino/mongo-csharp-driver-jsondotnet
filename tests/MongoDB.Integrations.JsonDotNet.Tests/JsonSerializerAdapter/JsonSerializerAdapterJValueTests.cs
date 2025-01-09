@@ -75,7 +75,7 @@ namespace MongoDB.Integrations.JsonDotNet.Tests.JsonSerializerAdapter
             var result = Deserialize(subject, bson, mustBeNested: true);
 
             // note: native reader throws, our reader adapter returns null
-            var expectedResult = Newtonsoft.Json.Linq.JValue.CreateNull();
+            var expectedResult = Newtonsoft.Json.Linq.JValue.CreateUndefined();
             result.Should().Be(expectedResult);
         }
 

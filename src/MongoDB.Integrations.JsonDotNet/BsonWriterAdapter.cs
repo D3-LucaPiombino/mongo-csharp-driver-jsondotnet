@@ -288,10 +288,9 @@ namespace MongoDB.Integrations.JsonDotNet
         public override void WriteValue(Guid value)
         {
             base.WriteValue(value);
-            var guidRepresentation = _wrappedWriter.Settings.GuidRepresentation;
-            var bytes = GuidConverter.ToBytes(value, guidRepresentation);
-            var subType = guidRepresentation == GuidRepresentation.Standard ? BsonBinarySubType.UuidStandard : BsonBinarySubType.UuidLegacy;
-            var binaryData = new BsonBinaryData(bytes, subType, guidRepresentation);
+#pragma warning disable CS0618 // Type or member is obsolete
+            var binaryData = new BsonBinaryData(value, _wrappedWriter.Settings.GuidRepresentation);
+#pragma warning restore CS0618 // Type or member is obsolete
             _wrappedWriter.WriteBinaryData(binaryData);
         }
 

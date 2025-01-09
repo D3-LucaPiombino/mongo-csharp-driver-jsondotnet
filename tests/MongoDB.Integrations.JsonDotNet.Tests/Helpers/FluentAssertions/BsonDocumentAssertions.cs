@@ -24,10 +24,7 @@ namespace MongoDB.Integrations.JsonDotNet.Tests.Helpers.FluentAssertions
     public class BsonDocumentAssertions : ReferenceTypeAssertions<BsonDocument, BsonDocumentAssertions>
     {
         // constructors
-        public BsonDocumentAssertions(BsonDocument value)
-        {
-            Subject = value;
-        }
+        public BsonDocumentAssertions(BsonDocument value) : base(value) { }
 
         // methods
         public AndConstraint<BsonDocumentAssertions> Be(BsonDocument expected, string because = "", params object[] reasonArgs)
