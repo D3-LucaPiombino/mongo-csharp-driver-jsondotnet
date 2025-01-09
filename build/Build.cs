@@ -68,7 +68,14 @@ class BuildDef : NukeBuild
         Log.Information($"Repository {GitRepository.Identifier}");
         Log.Information($"Repository branch {GitRepository.Branch}");
         Log.Information($"Repository url {GitRepository.HttpsUrl}");
-        Log.Information($"Repository version {GitVersion.FullSemVer}");
+
+        Log.Information($"GitVersion:");
+        var props = GitVersion.ToPropertyDictionary(i => i.Name, i => i?.ToString());
+        foreach (var prop in props)
+        {
+            if (prop.Value != null)
+                Log.Information("- {prop}: {value}", prop.Key, prop.Value);
+        }
     }
 
     public Target Clean => _ => _
@@ -97,7 +104,7 @@ class BuildDef : NukeBuild
                 .SetAssemblyVersion(GitVersion.AssemblySemVer)
                 .SetFileVersion(GitVersion.AssemblySemFileVer)
                 .SetInformationalVersion(GitVersion.InformationalVersion)
-                .SetVersion(GitVersion.NuGetVersionV2)
+                .SetVersion(GitVersion.SemVer)
                 .EnableNoRestore());
         });
 
@@ -125,7 +132,7 @@ class BuildDef : NukeBuild
                 .SetNoBuild(true)
                 .SetNoRestore(true)
                 .SetConfiguration(Configuration)
-                .SetVersion(GitVersion.NuGetVersionV2)
+                .SetVersion(GitVersion.SemVer)
                 .SetOutputDirectory(ArtifactsDirectory)
             );
         });
