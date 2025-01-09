@@ -59,6 +59,11 @@ class BuildDef : NukeBuild
     AbsolutePath TestsDirectory => RootDirectory / "tests";
     AbsolutePath ArtifactsDirectory => RootDirectory / "artifacts";
 
+    protected override void OnBuildCreated()
+    {
+        Logger.Success($"Repository version {GitVersion.FullSemVer}");
+    }
+
     Target Clean => _ => _
         .Before(Restore)
         .Executes(() =>
