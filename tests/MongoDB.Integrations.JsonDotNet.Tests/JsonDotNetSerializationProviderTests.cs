@@ -36,7 +36,7 @@ namespace MongoDB.Integrations.JsonDotNet.Tests
 
             Action action = () => new JsonDotNetSerializationProvider(predicate, wrappedSerializer);
 
-            action.ShouldThrow<ArgumentNullException>().And.ParamName.Should().Be("predicate");
+            action.Should().Throw<ArgumentNullException>().And.ParamName.Should().Be("predicate");
         }
 
         [Test]

@@ -64,9 +64,6 @@ namespace MongoDB.Integrations.JsonDotNet.Tests.Helpers.FluentAssertions
             return NotBe(expected, because, reasonArgs);
         }
 
-        protected override string Context
-        {
-            get { return "BsonArray"; }
-        }
+        protected override string Identifier  => "BsonArray";
     }
 }

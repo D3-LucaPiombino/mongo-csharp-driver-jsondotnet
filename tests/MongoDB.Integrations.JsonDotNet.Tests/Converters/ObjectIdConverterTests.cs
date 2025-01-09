@@ -102,7 +102,7 @@ namespace MongoDB.Integrations.JsonDotNet.Tests.Converters
 
             Action action = () => { var _ = ReadJsonUsingNativeJsonReader<ObjectId>(subject, json); };
 
-            action.ShouldThrow<Newtonsoft.Json.JsonReaderException>();
+            action.Should().Throw<Newtonsoft.Json.JsonReaderException>();
         }
 
         [TestCase("112233445566778899aabbcc", "{ x : { $oid : \"112233445566778899aabbcc\" } }")]

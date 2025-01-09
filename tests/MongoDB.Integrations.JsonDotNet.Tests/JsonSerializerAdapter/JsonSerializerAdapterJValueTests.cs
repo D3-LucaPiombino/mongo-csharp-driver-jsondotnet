@@ -14,6 +14,8 @@
 */
 
 using System;
+using System.IO;
+using System.Linq;
 using FluentAssertions;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
@@ -170,8 +172,11 @@ namespace MongoDB.Integrations.JsonDotNet.Tests.JsonSerializerAdapter
 
             var result = Serialize(subject, value, mustBeNested: true, guidRepresentation: guidRepresentation);
 
-            var expectedResult = SerializeUsingNewtonsoftWriter(value, mustBeNested: true);
-            result.Should().Equal(expectedResult);
+            var expectedResult = SerializeUsingNewtonsoftWriter(value, mustBeNested: true, guidRepresentation: guidRepresentation);
+
+            var resultAsString = string.Join(", ", result.Select(b => $"{b:X2}"));
+            var expectedAsString = string.Join(", ", expectedResult.Select(b => $"{b:X2}"));
+            resultAsString.Should().BeEquivalentTo(expectedAsString);
         }
 
         private IBsonSerializer<Newtonsoft.Json.Linq.JToken> CreateSubject()

@@ -57,9 +57,8 @@ namespace MongoDB.Integrations.JsonDotNet.Tests
             return new AndConstraint<JTokenAssertions>(this);
         }
 
-        protected override string Context
-        {
-            get { return "JToken"; }
-        }
+        
+
+        protected override string Identifier  => "JToken";
     }
 }

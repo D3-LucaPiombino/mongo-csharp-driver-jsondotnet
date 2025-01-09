@@ -116,7 +116,7 @@ namespace MongoDB.Integrations.JsonDotNet.Tests.Converters
 
             Action action = () => { var _ = ReadJsonUsingNativeBsonReader<BsonBinaryData>(subject, ToBson(json, guidRepresentation), mustBeNested: true); };
 
-            action.ShouldThrow<Newtonsoft.Json.JsonReaderException>();
+            action.Should().Throw<Newtonsoft.Json.JsonReaderException>();
         }
 
         [Test]
@@ -127,7 +127,7 @@ namespace MongoDB.Integrations.JsonDotNet.Tests.Converters
 
             Action action = () => { var _ = ReadJsonUsingNativeJsonReader<BsonBinaryData>(subject, json); };
 
-            action.ShouldThrow<Newtonsoft.Json.JsonReaderException>();
+            action.Should().Throw<Newtonsoft.Json.JsonReaderException>();
         }
 
         [TestCase(null, 0, "{ x : null }", 0)]

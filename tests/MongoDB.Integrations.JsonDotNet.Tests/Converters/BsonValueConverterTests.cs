@@ -73,7 +73,7 @@ namespace MongoDB.Integrations.JsonDotNet.Tests.Converters
         [TestCase("{ x : { $$symbol : \"abc\" } }", "{ $symbol : \"abc\" }")]
         [TestCase("{ x : { $timestamp : { t : 1, i : 2 } } }", "4294967298")] // note: Json.NET turns a BsonTimestamp into a long
         [TestCase("{ x : { $$timestamp : { t : 1, i : 2 } } }", "{ $timestamp : { t : 1, i : 2 } }")]
-        public void ReadJson_should_return_expected_result_when_using_native_bson_reader(string json, string expectedResult)
+        public void ReadJson_should_return_expected_result_when_using_native_bson_reader2(string json, string expectedResult)
         {
             var subject = new BsonValueConverter();
 
@@ -82,6 +82,7 @@ namespace MongoDB.Integrations.JsonDotNet.Tests.Converters
             result.Should().Be(expectedResult);
         }
 
+        
         [TestCase("null", "null")]
         [TestCase("undefined", "undefined")]
         [TestCase("0", "NumberLong(0)")]

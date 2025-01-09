@@ -39,7 +39,10 @@ namespace MongoDB.Integrations.JsonDotNet
         /// </summary>
         /// <param name="predicate">The predicate.</param>
         /// <param name="wrappedSerializer">The wrapped serializer.</param>
-        public JsonDotNetSerializationProvider(Func<Type, bool> predicate, Newtonsoft.Json.JsonSerializer wrappedSerializer = null)
+        public JsonDotNetSerializationProvider(
+            Func<Type, bool> predicate, 
+            Newtonsoft.Json.JsonSerializer wrappedSerializer = null
+        )
         {
             if (predicate == null)
             {

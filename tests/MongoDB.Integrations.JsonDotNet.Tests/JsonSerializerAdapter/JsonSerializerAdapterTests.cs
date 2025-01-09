@@ -14,6 +14,7 @@
 */
 
 using System;
+using System.Collections.Generic;
 using FluentAssertions;
 using MongoDB.Bson;
 using NSubstitute;
@@ -46,8 +47,10 @@ namespace MongoDB.Integrations.JsonDotNet.Tests.JsonSerializerAdapter
         {
             Action action = () => { var result = new JsonSerializerAdapter<object>(null); };
 
-            action.ShouldThrow<ArgumentNullException>().And.ParamName.Should().Be("wrappedSerializer");
+            action.Should().Throw<ArgumentNullException>().And.ParamName.Should().Be("wrappedSerializer");
         }
+
+        
     }
 
     [TestFixture]
@@ -179,5 +182,107 @@ namespace MongoDB.Integrations.JsonDotNet.Tests.JsonSerializerAdapter
 
             result.Should().Equal(ToBson(expectedResult));
         }
+    }
+
+    [TestFixture]
+    public class JsonSerializerAdapterClassWithPolymorphicTypeTests : JsonSerializerAdapterTestsBase
+    {
+        public struct Struct
+        {
+            public string PropInStruct { get; set; }
+        }
+
+        private class Base
+        {
+            public string Id { get; set; }
+            public Struct Value { get; set; }
+        }
+
+        private class Derived : Base
+        {
+            public string DerivedProp { get; set; }
+        }
+
+        class Container
+        {
+            public List<object> Items { get;set; }
+        }
+        
+        [Test]
+        public void Should_deserialize_a_list_of_heterogeneous_types_serialized_with_the_native_bson_serializer()
+        {
+            var container = new Container
+            {
+                Items = new List<object>
+                {
+                    new Base{ Id = "BaseId 1" },
+                    new Base{ Id = "BaseId 2", Value = new Struct{ PropInStruct = "42" } },
+                    new Derived { Id = "BaseId 3", DerivedProp = "Derived Prop 3" },
+                    new Derived { Id = "BaseId 4", DerivedProp = "Derived Prop 5" }
+                }
+            };
+
+            var nativeSerializer = Bson.Serialization.BsonSerializer.LookupSerializer<Container>();
+            var nativeSerialized = Serialize(nativeSerializer, container);
+
+
+            var serializerAdapter = CreateSerializer<Container>(new TypeNameMap
+            {
+                [typeof(Base)] =
+                {
+                    ("Base", primary: true),
+                },
+                [typeof(Derived)] =
+                {
+                    ("Derived", primary: true),
+                }
+            });
+            
+            var deserialized = Deserialize(serializerAdapter, nativeSerialized);
+            deserialized.Should().BeEquivalentTo(container);
+        }
+
+
+        
+
+        [Test]
+        public void Should_roundtrip_structs()
+        {
+            var serializerAdapter = CreateSerializer<Struct>();
+            var instance = new Struct { PropInStruct = "42" };
+            var serialized = Serialize(serializerAdapter, instance);
+
+            var deserialized = Deserialize(serializerAdapter, serialized);
+
+            deserialized.Should().BeEquivalentTo(instance);
+        }
+
+        private Newtonsoft.Json.JsonSerializer CreateSerializer(TypeNameMap typeMap = null)
+        {
+            var settings = new Newtonsoft.Json.JsonSerializerSettings
+            {
+                TypeNameHandling = Newtonsoft.Json.TypeNameHandling.Auto,
+                SerializationBinder = new JsonCompositeSerializationBinderAdapter(
+                    new DefaultPropertyNamesAdapter(),
+                    typeMap: typeMap
+                ),
+                Converters =
+                {
+                    JsonDotNet.Converters.BsonValueConverter.Instance,
+                    JsonDotNet.Converters.ObjectIdConverter.Instance,
+                }
+            };
+
+            var jsonSerializer = Newtonsoft.Json.JsonSerializer.Create(settings);
+
+            return jsonSerializer;
+        }
+
+        private JsonSerializerAdapter<T> CreateSerializer<T>(TypeNameMap typeMap = null)
+        {
+            return new JsonSerializerAdapter<T>(CreateSerializer(typeMap));
+        }
+
+
     }
 }

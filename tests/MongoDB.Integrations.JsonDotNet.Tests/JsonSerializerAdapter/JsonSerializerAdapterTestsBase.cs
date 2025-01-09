@@ -13,6 +13,7 @@
 * limitations under the License.
 */
 
+using System;
 using System.IO;
 using MongoDB.Bson;
 using MongoDB.Bson.IO;
@@ -49,9 +50,11 @@ namespace MongoDB.Integrations.JsonDotNet.Tests.JsonSerializerAdapter
         protected T DeserializeUsingNewtonsoftReader<T>(byte[] bson, bool mustBeNested = false)
         {
             using (var memoryStream = new MemoryStream(bson))
-            using (var newtonsoftReader = new Newtonsoft.Json.Bson.BsonDataReader(memoryStream))
+            //using (var newtonsoftReader = new Newtonsoft.Json.Bson.BsonDataReader(memoryStream))
+            using (var reader = new BsonBinaryReader(memoryStream))
+            using (var newtonsoftReader = new BsonReaderAdapter(reader))
             {
-                newtonsoftReader.DateTimeKindHandling = System.DateTimeKind.Utc;
+                //newtonsoftReader.DateTimeKindHandling = System.DateTimeKind.Utc;
                 newtonsoftReader.DateTimeZoneHandling = Newtonsoft.Json.DateTimeZoneHandling.Utc;
 
                 if (mustBeNested)
@@ -96,10 +99,33 @@ namespace MongoDB.Integrations.JsonDotNet.Tests.JsonSerializerAdapter
             }
         }
 
-        protected byte[] SerializeUsingNewtonsoftWriter<T>(T value, bool mustBeNested = false)
+        
+        protected byte[] SerializeUsingNewtonsoftWriter<T>(T value, bool mustBeNested = false, GuidRepresentation guidRepresentation = GuidRepresentation.Unspecified)
         {
             using (var memoryStream = new MemoryStream())
-            using (var newtonsoftWriter = new Newtonsoft.Json.Bson.BsonDataWriter(memoryStream))
+            /*
+            
+            The Newtonsoft.Json.Bson.BsonDataWriter cannot be used for Guids with `GuidRepresentation.CSharpLegacy` 
+            because it will always write Guids with with BinaryData subtype `0x04` that map to `BsonBinaryType.Uuid`. 
+            `BsonBinaryType.OldUuid` would write the required BinaryData subtype (`0x03`), but there is no way to 
+            force its use through the public API surface (the subtype it is actually hardcoded to `BsonBinaryType.Uuid`
+            in the JsonNet codebase).
+
+            The MongoDb BSON writer instead use BsonBinarySubType.UuidLegacy (`0x03`) when the type 
+            is `GuidRepresentation.CSharpLegacy`.
+            The BinaryData subtype `0x04` map to `BsonBinarySubType.UuidStandard`, but it cannot be used
+            because then the `Guid` bytes are written in network order (BigEndian) introducting more differences.
+            
+            This code has been modified to use the `BsonWriterAdapter` and to verify that Guids roundtrip
+            correctly when using the adapter.
+            
+            */
+
+            //using (var newtonsoftWriter = new Newtonsoft.Json.Bson.BsonDataWriter(memoryStream))
+
+            using (var writer = new BsonBinaryWriter(memoryStream, new BsonBinaryWriterSettings { GuidRepresentation = GuidRepresentation.CSharpLegacy }))
+            using (var newtonsoftWriter = new BsonWriterAdapter(writer))
+            //
             {
                 if (mustBeNested)
                 {
@@ -138,3 +164,5 @@ namespace MongoDB.Integrations.JsonDotNet.Tests.JsonSerializerAdapter
         }
     }
 }
+
+

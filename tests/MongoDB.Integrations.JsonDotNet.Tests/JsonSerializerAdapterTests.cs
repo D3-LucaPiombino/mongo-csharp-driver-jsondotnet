@@ -63,7 +63,7 @@ namespace MongoDB.Integrations.JsonDotNet.Tests
             BsonSerializationInfo info;
             Action action = () => subject.TryGetItemSerializationInfo(out info);
 
-            action.ShouldThrow<BsonSerializationException>().And.Message.Should().Contain("has a Converter");
+            action.Should().Throw<BsonSerializationException>().And.Message.Should().Contain("has a Converter");
         }
 
         [Test]
@@ -151,8 +151,11 @@ namespace MongoDB.Integrations.JsonDotNet.Tests
             BsonSerializationInfo info;
             Action action = () => subject.TryGetMemberSerializationInfo("F", out info);
 
-            action.ShouldThrow<BsonSerializationException>();
+            action.Should().Throw<BsonSerializationException>();
         }
+
+
+
 
         // nested types
         private class C

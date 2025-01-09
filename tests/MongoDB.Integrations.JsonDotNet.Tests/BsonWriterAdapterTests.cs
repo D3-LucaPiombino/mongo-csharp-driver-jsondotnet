@@ -116,7 +116,7 @@ namespace MongoDB.Integrations.JsonDotNet.Tests
 
             Action action = () => { subject.WriteEndConstructor(); };
 
-            action.ShouldThrow<NotSupportedException>();
+            action.Should().Throw<NotSupportedException>();
         }
 
         [Test]
@@ -232,7 +232,7 @@ namespace MongoDB.Integrations.JsonDotNet.Tests
 
             Action action = () => { subject.WriteRaw("abc"); };
 
-            action.ShouldThrow<NotSupportedException>();
+            action.Should().Throw<NotSupportedException>();
         }
 
         [Test]
@@ -242,7 +242,7 @@ namespace MongoDB.Integrations.JsonDotNet.Tests
 
             Action action = () => { subject.WriteRawValue("abc"); };
 
-            action.ShouldThrow<NotSupportedException>();
+            action.Should().Throw<NotSupportedException>();
         }
 
         [Test]
@@ -277,7 +277,7 @@ namespace MongoDB.Integrations.JsonDotNet.Tests
 
             Action action = () => { subject.WriteStartConstructor("x"); };
 
-            action.ShouldThrow<NotSupportedException>();
+            action.Should().Throw<NotSupportedException>();
         }
 
         [Test]
