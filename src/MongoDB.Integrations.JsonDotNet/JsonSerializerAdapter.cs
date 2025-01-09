@@ -14,46 +14,112 @@
 */
 
 using System;
-using MongoDB.Integrations.JsonDotNet.Converters;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Bson;
 using System.Reflection;
 using System.Linq;
-using System.Collections.Generic;
+using Newtonsoft.Json.Serialization;
+using System.Threading;
+
 
 namespace MongoDB.Integrations.JsonDotNet
 {
-    internal static class JsonSerializerAdapterHelper
+    using JsonSerializer = Newtonsoft.Json.JsonSerializer;
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class JsonSerializerAdapter
     {
-        // public static methods
-        public static Newtonsoft.Json.JsonSerializer CreateDefaultJsonSerializer()
+        class Node<T> : IDisposable
+            where T : class
         {
-            var serializer = new Newtonsoft.Json.JsonSerializer();
-            serializer.Converters.Add(BsonValueConverter.Instance);
-            serializer.Converters.Add(ObjectIdConverter.Instance);
-            return serializer;
+            /// <summary>
+            /// This is not shared for different T.
+            /// but we only instantiate this clss internally for 
+            /// <see cref="JsonSerializer"/> anyway.
+            /// </summary>
+            private static AsyncLocal<Node<T>> _storage = new AsyncLocal<Node<T>>();
+
+            private readonly Node<T> _prev;
+            private readonly T _item;
+
+            protected Node() {  }
+
+            protected Node(Node<T> prev, T item)
+            {
+                _prev = prev;
+                _item = item;
+            }
+
+            public static IDisposable Push(T item)
+            {
+                var res = new Node<T>(_storage.Value, item);
+                _storage.Value = res;
+                return res;
+            }
+
+            public static T Current => _storage.Value?._item;
+
+            public void Dispose()
+            {
+                _storage.Value = _prev;
+            }
+        }
+
+        class Node : Node<JsonSerializer> { }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public static JsonSerializer GetCurrent() => Node.Current;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="jsonSerializer"></param>
+        public static IDisposable Push(JsonSerializer jsonSerializer)
+        {
+            return Node.Push(jsonSerializer);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public static JsonSerializer CreateDefaultJsonSerializer()
+        {
+            return new JsonSerializer().WithBsonAdapterConfiguration();
         }
     }
+
 
     /// <summary>
     /// Represents an adapter that adapts a Json.NET serializer for use with the MongoDB driver.
     /// </summary>
     /// <typeparam name="TValue">The type of the value.</typeparam>
-    /// <seealso cref="MongoDB.Bson.Serialization.Serializers.SerializerBase{TValue}" />
-    /// <seealso cref="MongoDB.Bson.Serialization.IBsonArraySerializer" />
-    /// <seealso cref="MongoDB.Bson.Serialization.IBsonDocumentSerializer" />
-    public class JsonSerializerAdapter<TValue> : SerializerBase<TValue>, IBsonArraySerializer, IBsonDocumentSerializer
+    /// <seealso cref="SerializerBase{TValue}" />
+    /// <seealso cref="IBsonArraySerializer" />
+    /// <seealso cref="IBsonDocumentSerializer" />
+    public class JsonSerializerAdapter<TValue> : 
+        SerializerBase<TValue>, 
+        IBsonArraySerializer, 
+        IBsonDocumentSerializer
     {
+        private readonly JsonSerializer _wrappedSerializer;
+
         // private fields
-        private readonly Newtonsoft.Json.JsonSerializer _wrappedSerializer;
+        private JsonSerializer WrappedSerializer => JsonSerializerAdapter.GetCurrent() ?? _wrappedSerializer;
 
         // constructors
         /// <summary>
         /// Initializes a new instance of the <see cref="JsonSerializerAdapter{TValue}"/> class.
         /// </summary>
-        public JsonSerializerAdapter()
-            : this(JsonSerializerAdapterHelper.CreateDefaultJsonSerializer())
+        public JsonSerializerAdapter() 
+            : this(JsonSerializerAdapter.CreateDefaultJsonSerializer())
         {
         }
 
@@ -61,45 +127,52 @@ namespace MongoDB.Integrations.JsonDotNet
         /// Initializes a new instance of the <see cref="JsonSerializerAdapter{TValue}"/> class.
         /// </summary>
         /// <param name="wrappedSerializer">The wrapped serializer.</param>
-        /// <exception cref="System.ArgumentNullException">wrappedSerializer</exception>
-        public JsonSerializerAdapter(Newtonsoft.Json.JsonSerializer wrappedSerializer)
+        /// <exception cref="ArgumentNullException">wrappedSerializer</exception>
+        public JsonSerializerAdapter(
+            JsonSerializer wrappedSerializer
+        )
         {
-            if (wrappedSerializer == null)
-            {
-                throw new ArgumentNullException("wrappedSerializer");
-            }
-
-            _wrappedSerializer = wrappedSerializer;
+            _wrappedSerializer = wrappedSerializer ?? throw new ArgumentNullException("wrappedSerializer");
         }
 
         // public methods
         /// <inheritdoc/>
         public override TValue Deserialize(BsonDeserializationContext context, BsonDeserializationArgs args)
         {
+            
+            var serializer = WrappedSerializer;
+
             var readerAdapter = new BsonReaderAdapter(
-                context.Reader, 
-                _wrappedSerializer.SerializationBinder as IPropertyNamesAdapter
+                context.Reader,
+                serializer.SerializationBinder as IPropertyNamesAdapter
             );
-            return (TValue)_wrappedSerializer.Deserialize(readerAdapter, args.NominalType);
+            return (TValue)serializer.Deserialize(readerAdapter, args.NominalType);
         }
 
         /// <inheritdoc/>
         public override void Serialize(BsonSerializationContext context, BsonSerializationArgs args, TValue value)
         {
+            var serializer = WrappedSerializer;
             var writerAdapter = new BsonWriterAdapter(
                 context.Writer,
-                _wrappedSerializer.SerializationBinder as IPropertyNamesAdapter
+                serializer.SerializationBinder as IPropertyNamesAdapter
             );
-            _wrappedSerializer.Serialize(writerAdapter, value, args.NominalType);
+            serializer.Serialize(writerAdapter, value, args.NominalType);
         }
 
         /// <inheritdoc/>
         public bool TryGetItemSerializationInfo(out BsonSerializationInfo serializationInfo)
         {
+            var serializer = WrappedSerializer;
+            
+
+
             var valueType = typeof(TValue);
 
-            var contract = _wrappedSerializer.ContractResolver.ResolveContract(valueType);
-            var arrayContract = contract as Newtonsoft.Json.Serialization.JsonArrayContract;
+            
+
+            var contract = serializer.ContractResolver.ResolveContract(valueType);
+            var arrayContract = contract as JsonArrayContract;
             if (arrayContract == null)
             {
                 serializationInfo = null;
@@ -118,10 +191,13 @@ namespace MongoDB.Integrations.JsonDotNet
                 throw new BsonSerializationException($"The Json.NET contract for type \"{valueType.Name}\" has an ItemConverter and JsonConverters are opaque.");
             }
 
-            var itemType = arrayContract.CollectionItemType;
-            var itemSerializerType = typeof(JsonSerializerAdapter<>).MakeGenericType(itemType);
-            var itemSerializer = (IBsonSerializer)Activator.CreateInstance(itemSerializerType, _wrappedSerializer);
+            
 
+            var itemType = arrayContract.CollectionItemType;
+            //var itemSerializerType = typeof(JsonSerializerAdapter<>).MakeGenericType(itemType);
+            //var itemSerializer = (IBsonSerializer)Activator.CreateInstance(itemSerializerType, _wrappedSerializer);
+
+            var itemSerializer = serializer.GetOrCreateAdapter(itemType);
             serializationInfo = new BsonSerializationInfo(null, itemSerializer, nominalType: itemType);
             return true;
         }
@@ -131,9 +207,12 @@ namespace MongoDB.Integrations.JsonDotNet
         {
             serializationInfo = null;
 
+            var serializer = WrappedSerializer;
+            
+            
             var valueType = typeof(TValue);
-            var contract = _wrappedSerializer.ContractResolver.ResolveContract(valueType);
-            var objectContract = contract as Newtonsoft.Json.Serialization.JsonObjectContract;
+            var contract = serializer.ContractResolver.ResolveContract(valueType);
+            var objectContract = contract as JsonObjectContract;
             if (objectContract == null)
             {
                 serializationInfo = null;
@@ -160,15 +239,17 @@ namespace MongoDB.Integrations.JsonDotNet
             {
                 return false;
             }
+            
+            //var memberSerializerType = _jsonSerializerAdapterTypes.GetOrAdd(memberType, _get);
+            //var memberSerializerType = typeof(JsonSerializerAdapter<>).MakeGenericType(memberType);
+            //var memberSerializer = (IBsonSerializer)Activator.CreateInstance(memberSerializerType, _wrappedSerializer);
 
-            var memberSerializerType = typeof(JsonSerializerAdapter<>).MakeGenericType(memberType);
-            var memberSerializer = (IBsonSerializer)Activator.CreateInstance(memberSerializerType, _wrappedSerializer);
-
+            var memberSerializer = serializer.GetOrCreateAdapter(memberType);
             serializationInfo = new BsonSerializationInfo(elementName, memberSerializer, nominalType: memberType);
             return true;
         }
 
-        private bool TryGetMemberType(Type type, string memberName, out Type memberType)
+        private static bool TryGetMemberType(Type type, string memberName, out Type memberType)
         {
             memberType = null;
 
