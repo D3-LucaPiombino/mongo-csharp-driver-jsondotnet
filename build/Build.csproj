@@ -5,16 +5,14 @@
     <TargetFramework>net10.0</TargetFramework>
     <RootNamespace></RootNamespace>
     <NoWarn>CS0649;CS0169</NoWarn>
-    <NukeRootDirectory>..</NukeRootDirectory>
-    <NukeScriptDirectory>..</NukeScriptDirectory>
+    <FalloutRootDirectory>..</FalloutRootDirectory>
+    <FalloutScriptDirectory>..</FalloutScriptDirectory>
     <IsPackable>false</IsPackable>
-    <NukeTelemetryVersion>1</NukeTelemetryVersion>
   </PropertyGroup>
 
   <ItemGroup>
-	<PackageDownload Include="gpr" Version="[0.1.294]" />
-	<PackageReference Include="Nuke.Common" Version="9.0.3" />
-	<PackageReference Include="Nuke.Components" Version="9.0.3" />
+	<PackageReference Include="Fallout.Common" Version="10.5.0" />
+	<PackageReference Include="Fallout.Components" Version="10.5.0" />
 	<PackageDownload Include="GitVersion.Tool" Version="[6.1.0]" />
     
   </ItemGroup>

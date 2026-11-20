@@ -1,19 +1,18 @@
-using Nuke.Common;
-using Nuke.Common.CI;
-using Nuke.Common.CI.GitHubActions;
-using Nuke.Common.Execution;
-using Nuke.Common.Git;
-using Nuke.Common.IO;
-using Nuke.Common.ProjectModel;
-using Nuke.Common.Tooling;
-using Nuke.Common.Tools.DotNet;
-using Nuke.Common.Tools.GitVersion;
-using Nuke.Common.Utilities.Collections;
-using Nuke.Components;
+using Fallout.Common;
+using Fallout.Common.CI;
+using Fallout.Common.CI.GitHubActions;
+using Fallout.Common.Execution;
+using Fallout.Common.Git;
+using Fallout.Common.IO;
+using Fallout.Common.ProjectModel;
+using Fallout.Common.Tooling;
+using Fallout.Common.Tools.DotNet;
+using Fallout.Common.Tools.GitVersion;
+using Fallout.Common.Utilities.Collections;
+using Fallout.Components;
 using Serilog;
-using static Nuke.Common.IO.FileSystemTasks;
-using static Nuke.Common.IO.PathConstruction;
-using static Nuke.Common.Tools.DotNet.DotNetTasks;
+using static Fallout.Common.IO.PathConstruction;
+using static Fallout.Common.Tools.DotNet.DotNetTasks;
 
 
 [UnsetVisualStudioEnvironmentVariables]
@@ -25,19 +24,11 @@ using static Nuke.Common.Tools.DotNet.DotNetTasks;
     AutoGenerate = false,
     InvokedTargets = new[] { nameof(Publish) }
 )]
-class BuildDef : NukeBuild
+class BuildDef : FalloutBuild
 {
-    /// Support plugins are available for:
-    ///   - JetBrains ReSharper        https://nuke.build/resharper
-    ///   - JetBrains Rider            https://nuke.build/rider
-    ///   - Microsoft VisualStudio     https://nuke.build/visualstudio
-    ///   - Microsoft VSCode           https://nuke.build/vscode
+    /// Support extensions (Visual Studio, Rider, ReSharper, VS Code): https://docs.fallout.build/docs/ide/rider
 
     public static int Main () => Execute<BuildDef>(x => x.Build);
-
-    [PackageExecutable(packageId: "gpr", packageExecutable: "gpr.dll")]
-    readonly Tool Gpr;
-
 
     [Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")]
     readonly Configuration Configuration = IsLocalBuild ? Configuration.Debug : Configuration.Release;
@@ -82,9 +73,9 @@ class BuildDef : NukeBuild
         .Before(Restore)
         .Executes(() =>
         {
-            SourceDirectory.GlobDirectories("**/bin", "**/obj").ForEach(DeleteDirectory);
-            TestsDirectory.GlobDirectories("**/bin", "**/obj").ForEach(DeleteDirectory);
-            EnsureCleanDirectory(ArtifactsDirectory);
+            SourceDirectory.GlobDirectories("**/bin", "**/obj").ForEach(d => d.DeleteDirectory());
+            TestsDirectory.GlobDirectories("**/bin", "**/obj").ForEach(d => d.DeleteDirectory());
+            ArtifactsDirectory.CreateOrCleanDirectory();
         });
 
     Target Restore => _ => _

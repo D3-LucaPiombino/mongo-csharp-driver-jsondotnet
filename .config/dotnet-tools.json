@@ -2,10 +2,10 @@
   "version": 1,
   "isRoot": true,
   "tools": {
-    "nuke.globaltool": {
-      "version": "0.24.11",
+    "fallout.globaltool": {
+      "version": "10.5.0",
       "commands": [
-        "nuke"
+        "fallout"
       ]
     }
   }
