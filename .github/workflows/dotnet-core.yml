@@ -13,6 +13,11 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
+    permissions:
+      # Clone
+      contents: read
+      # To publish nuget packages to the GitHub registry with GITHUB_TOKEN
+      packages: write
 
     steps:
     - uses: actions/checkout@v2

@@ -40,7 +40,7 @@ class BuildDef : FalloutBuild
     readonly string NuGetApiKey;
 
     [Parameter("GitHub NuGet feed url (used to push nuget packages to the repository feed)")]
-    readonly string GitHubNuGetFeedUrl = "https://nuget.pkg.github.com/d3-lucapiombino/";
+    readonly string GitHubNuGetFeedUrl = "https://nuget.pkg.github.com/d3-lucapiombino/index.json";
     
     [Parameter("GitHub Token (used to push nuget packages to the repository feed)")] 
     readonly string GitHubToken;
