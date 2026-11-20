@@ -20,9 +20,10 @@ jobs:
       packages: write
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Fetch with --unshallow
-      run: git fetch --prune --unshallow --tags
+    - uses: actions/checkout@v6
+      with:
+        # Full history and tags: GitVersion needs them to compute the package version
+        fetch-depth: 0
     - name: Run './build.sh Publish'
       run: ./build.sh Publish
       env:
