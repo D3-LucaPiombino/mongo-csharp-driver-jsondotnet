@@ -168,7 +168,7 @@ namespace MongoDB.Integrations.JsonDotNet.Tests.JsonSerializerAdapter
         // private methods
         private void AssertSerializesTheSame(Newtonsoft.Json.Linq.JValue value, GuidRepresentation guidRepresentation = GuidRepresentation.Unspecified)
         {
-            var subject = CreateSubject();
+            var subject = CreateSubject(guidRepresentation == GuidRepresentation.Unspecified ? GuidRepresentation.Standard : guidRepresentation);
 
             var result = Serialize(subject, value, mustBeNested: true, guidRepresentation: guidRepresentation);
 
@@ -179,10 +179,10 @@ namespace MongoDB.Integrations.JsonDotNet.Tests.JsonSerializerAdapter
             resultAsString.Should().BeEquivalentTo(expectedAsString);
         }
 
-        private IBsonSerializer<Newtonsoft.Json.Linq.JToken> CreateSubject()
+        private IBsonSerializer<Newtonsoft.Json.Linq.JToken> CreateSubject(GuidRepresentation guidRepresentation = GuidRepresentation.Standard)
         {
             //var subject = new JValueSerializer();
-            var subject = new JsonSerializerAdapter<Newtonsoft.Json.Linq.JToken>();
+            var subject = new JsonSerializerAdapter<Newtonsoft.Json.Linq.JToken>(MongoDB.Integrations.JsonDotNet.JsonSerializerAdapter.CreateDefaultJsonSerializer(), guidRepresentation);
             return subject;
         }
     }

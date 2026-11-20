@@ -428,7 +428,7 @@ namespace MongoDB.Integrations.JsonDotNet.Tests
         [Test]
         public void WriteValue_Guid_should_have_expected_result()
         {
-            var subject = CreateSubject();
+            var subject = CreateSubject(GuidRepresentation.CSharpLegacy);
             var value = Guid.Parse("01020304-0506-0708-090a-0b0c0d0e0f10");
 
             WriteNested(subject, () => subject.WriteValue(value));
@@ -568,21 +568,21 @@ namespace MongoDB.Integrations.JsonDotNet.Tests
             var bson = stream.ToArray();
 
             byte[] expectedBson;
-            using (var bsonReader = new JsonReader(json, new JsonReaderSettings { GuidRepresentation = GuidRepresentation.Unspecified }))
+            using (var bsonReader = new JsonReader(json, new JsonReaderSettings()))
             {
                 var context = BsonDeserializationContext.CreateRoot(bsonReader);
                 var document = BsonDocumentSerializer.Instance.Deserialize(context);
-                expectedBson = document.ToBson(writerSettings: new BsonBinaryWriterSettings { GuidRepresentation = GuidRepresentation.Unspecified });
+                expectedBson = document.ToBson(writerSettings: new BsonBinaryWriterSettings());
             }
 
             bson.Should().Equal(expectedBson);
         }
 
-        private BsonWriterAdapter CreateSubject()
+        private BsonWriterAdapter CreateSubject(GuidRepresentation guidRepresentation = GuidRepresentation.Standard)
         {
             var stream = new MemoryStream();
             var wrappedWriter = new BsonBinaryWriter(stream);
-            return new BsonWriterAdapter(wrappedWriter);
+            return new BsonWriterAdapter(wrappedWriter, null, guidRepresentation);
         }
 
         private void WriteNested(BsonWriterAdapter adapter, Action writer)

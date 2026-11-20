@@ -79,7 +79,7 @@ namespace MongoDB.Integrations.JsonDotNet.Tests.JsonSerializerAdapter
         protected byte[] Serialize<T>(IBsonSerializer<T> serializer, T value, bool mustBeNested = false, GuidRepresentation guidRepresentation = GuidRepresentation.Unspecified)
         {
             using (var memoryStream = new MemoryStream())
-            using (var writer = new BsonBinaryWriter(memoryStream, new BsonBinaryWriterSettings { GuidRepresentation = guidRepresentation }))
+            using (var writer = new BsonBinaryWriter(memoryStream, new BsonBinaryWriterSettings()))
             {
                 if (mustBeNested)
                 {
@@ -123,8 +123,8 @@ namespace MongoDB.Integrations.JsonDotNet.Tests.JsonSerializerAdapter
 
             //using (var newtonsoftWriter = new Newtonsoft.Json.Bson.BsonDataWriter(memoryStream))
 
-            using (var writer = new BsonBinaryWriter(memoryStream, new BsonBinaryWriterSettings { GuidRepresentation = GuidRepresentation.CSharpLegacy }))
-            using (var newtonsoftWriter = new BsonWriterAdapter(writer))
+            using (var writer = new BsonBinaryWriter(memoryStream, new BsonBinaryWriterSettings()))
+            using (var newtonsoftWriter = new BsonWriterAdapter(writer, null, GuidRepresentation.CSharpLegacy))
             //
             {
                 if (mustBeNested)
@@ -148,14 +148,14 @@ namespace MongoDB.Integrations.JsonDotNet.Tests.JsonSerializerAdapter
         protected byte[] ToBson(string json, GuidRepresentation guidRepresentation = GuidRepresentation.Unspecified)
         {
             BsonDocument document;
-            using (var reader = new JsonReader(json, new JsonReaderSettings { GuidRepresentation = guidRepresentation }))
+            using (var reader = new JsonReader(json, new JsonReaderSettings()))
             {
                 var context = BsonDeserializationContext.CreateRoot(reader);
                 document = BsonDocumentSerializer.Instance.Deserialize(context);
             }
 
             using (var memoryStream = new MemoryStream())
-            using (var writer = new BsonBinaryWriter(memoryStream, new BsonBinaryWriterSettings { GuidRepresentation = guidRepresentation }))
+            using (var writer = new BsonBinaryWriter(memoryStream, new BsonBinaryWriterSettings()))
             {
                 var context = BsonSerializationContext.CreateRoot(writer);
                 BsonDocumentSerializer.Instance.Serialize(context, document);

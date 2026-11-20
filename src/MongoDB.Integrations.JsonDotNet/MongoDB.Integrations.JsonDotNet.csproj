@@ -1,11 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <AssemblyTitle>MongoDB.Integrations.JsonDotNet</AssemblyTitle>
-    <Company>MongoDB, Inc.</Company>
+    <Company>Luca Piombino</Company>
+    <Authors>Luca Piombino;MongoDB Inc.</Authors>
     <Product>MongoDB.Integrations.JsonDotNet</Product>
     <Description>Supports using Json.NET serializers with the MongoDB .NET Driver</Description>
-    <Copyright>Copyright ©  2015-2016</Copyright>
+    <!-- Apache-2.0 requires keeping the original copyright notice: this is a fork of the MongoDB Json.NET integration. -->
+    <Copyright>Copyright © 2015-2016 MongoDB Inc.; modifications Copyright © 2025-2026 Luca Piombino</Copyright>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <!--<Version>1.0.0-local</Version>-->
     <OutputPath>bin\$(Configuration)\</OutputPath>
@@ -19,6 +21,8 @@
     <!--NuGet Package Props-->
     <IsPackable>true</IsPackable>
     <PackageId>MongoDB.Integrations.JsonDotNet</PackageId>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <Description>Allow to use Newtonsoft.Json as to serialize and deserialize MongoDb documents</Description>
     <PackageTags>MongoDb serialization serializer json bson</PackageTags>
     <RepositoryUrl>https://github.com/D3-LucaPiombino/mongo-csharp-driver-jsondotnet</RepositoryUrl>
@@ -34,11 +38,13 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="MongoDB.Bson" Version="2.30.0" />
+    <!--NuGet package readme (shown on the package page)-->
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" Visible="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MongoDB.Bson" Version="3.14.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Newtonsoft.Json.Bson" Version="1.0.3" />
-    
-    <!--Source Link-->
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
   </ItemGroup>
 </Project>

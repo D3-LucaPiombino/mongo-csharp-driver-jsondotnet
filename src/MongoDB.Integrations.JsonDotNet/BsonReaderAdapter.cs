@@ -26,15 +26,18 @@ namespace MongoDB.Integrations.JsonDotNet
         // private fields
         private readonly IBsonReader _wrappedReader;
         private readonly IPropertyNamesAdapter _propertyNameBinder;
+        private readonly GuidRepresentation _guidRepresentation;
 
         // constructors
         public BsonReaderAdapter(
-            IBsonReader wrappedReader, 
-            IPropertyNamesAdapter propertyNameBinder = null
+            IBsonReader wrappedReader,
+            IPropertyNamesAdapter propertyNameBinder = null,
+            GuidRepresentation? guidRepresentation = null
         )
         {
             _wrappedReader = wrappedReader;
             _propertyNameBinder = propertyNameBinder;
+            _guidRepresentation = guidRepresentation ?? JsonSerializerAdapter.DefaultGuidRepresentation;
         }
 
         // public properties
@@ -118,13 +121,13 @@ namespace MongoDB.Integrations.JsonDotNet
                     switch (bsonBinaryData.SubType)
                     {
                         case BsonBinarySubType.UuidLegacy:
-                            var guidRepresentation = GuidRepresentation.Unspecified;
-                            var bsonReader = _wrappedReader as BsonReader;
-                            if (bsonReader != null)
+                            // Subtype 3 needs a legacy representation to be decoded: the driver 3.x
+                            // readers don't carry one, so use the configured one when it is a legacy
+                            // layout, and the historical default (CSharpLegacy) otherwise.
+                            var guidRepresentation = _guidRepresentation;
+                            if (guidRepresentation == GuidRepresentation.Standard || guidRepresentation == GuidRepresentation.Unspecified)
                             {
-#pragma warning disable CS0618 // Type or member is obsolete
-                                guidRepresentation = bsonReader.Settings.GuidRepresentation;
-#pragma warning restore CS0618 // Type or member is obsolete
+                                guidRepresentation = GuidRepresentation.CSharpLegacy;
                             }
                             jsonDotNetValue = GuidConverter.FromBytes(bsonBinaryData.Bytes, guidRepresentation);
                             break;

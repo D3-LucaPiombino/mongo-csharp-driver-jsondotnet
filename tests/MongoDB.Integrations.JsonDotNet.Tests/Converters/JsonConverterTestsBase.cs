@@ -89,10 +89,10 @@ namespace MongoDB.Integrations.JsonDotNet.Tests.Converters
 
         protected T ReadJsonUsingWrappedBsonReader<T>(Newtonsoft.Json.JsonConverter converter, byte[] bson, bool mustBeNested = false, GuidRepresentation guidRepresentation = GuidRepresentation.CSharpLegacy)
         {
-            var readerSettings = new BsonBinaryReaderSettings { GuidRepresentation = guidRepresentation };
+            var readerSettings = new BsonBinaryReaderSettings();
             using (var stream = new MemoryStream(bson))
             using (var wrappedReader = new BsonBinaryReader(stream, readerSettings))
-            using (var reader = new BsonReaderAdapter(wrappedReader))
+            using (var reader = new BsonReaderAdapter(wrappedReader, null, guidRepresentation))
             {
                 return ReadJson<T>(converter, reader, mustBeNested);
             }
@@ -109,7 +109,7 @@ namespace MongoDB.Integrations.JsonDotNet.Tests.Converters
 
         protected byte[] ToBson(string json, GuidRepresentation guidRepresentation = GuidRepresentation.Unspecified)
         {
-            var writerSettings = new BsonBinaryWriterSettings { GuidRepresentation = guidRepresentation };
+            var writerSettings = new BsonBinaryWriterSettings();
             return UnquoteExtendedJson(BsonDocument.Parse(json)).ToBson(writerSettings: writerSettings);
         }
 
@@ -152,11 +152,11 @@ namespace MongoDB.Integrations.JsonDotNet.Tests.Converters
 
         protected byte[] WriteJsonUsingWrappedBsonWriter(Newtonsoft.Json.JsonConverter converter, object value, bool mustBeNested = false, GuidRepresentation guidRepresentation = GuidRepresentation.CSharpLegacy)
         {
-            var wrappedWriterSettings = new BsonBinaryWriterSettings { GuidRepresentation = guidRepresentation };
+            var wrappedWriterSettings = new BsonBinaryWriterSettings();
 
             using (var stream = new MemoryStream())
             using (var wrappedWriter = new BsonBinaryWriter(stream, wrappedWriterSettings))
-            using (var writer = new BsonWriterAdapter(wrappedWriter))
+            using (var writer = new BsonWriterAdapter(wrappedWriter, null, guidRepresentation))
             {
                 WriteJson(converter, value, writer, mustBeNested);
                 return stream.ToArray();
@@ -166,7 +166,7 @@ namespace MongoDB.Integrations.JsonDotNet.Tests.Converters
         protected string WriteJsonUsingWrappedJsonWriter(Newtonsoft.Json.JsonConverter converter, object value)
         {
             using (var stringWriter = new StringWriter())
-            using (var wrappedWriter = new JsonWriter(stringWriter))
+            using (var wrappedWriter = new JsonWriter(stringWriter, new JsonWriterSettings { OutputMode = JsonOutputMode.Shell }))
             using (var writer = new BsonWriterAdapter(wrappedWriter))
             {
                 WriteJson(converter, value, writer);

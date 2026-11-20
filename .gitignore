@@ -59,4 +59,4 @@ src/packages
 *.cs.orig
 *.vb.orig
 /.vs/*
-/.nuke/temp
+/.fallout/temp

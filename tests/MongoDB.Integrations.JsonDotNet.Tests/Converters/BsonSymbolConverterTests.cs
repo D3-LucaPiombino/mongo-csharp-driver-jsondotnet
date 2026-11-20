@@ -54,7 +54,7 @@ namespace MongoDB.Integrations.JsonDotNet.Tests.Converters
 
             var result = ReadJsonUsingNativeBsonReader<BsonSymbol>(subject, ToBson(json), mustBeNested: true);
 
-            result.Should().BeSameAs(expectedResult);
+            result.Should().Be(expectedResult);
         }
 
         [TestCase("null", null)]
@@ -69,7 +69,7 @@ namespace MongoDB.Integrations.JsonDotNet.Tests.Converters
 
             var result = ReadJsonUsingNativeJsonReader<BsonSymbol>(subject, json);
 
-            result.Should().BeSameAs(expectedResult);
+            result.Should().Be(expectedResult);
         }
 
         [TestCase("{ x : null }", null)]
@@ -86,7 +86,7 @@ namespace MongoDB.Integrations.JsonDotNet.Tests.Converters
 
             var result = ReadJsonUsingWrappedBsonReader<BsonSymbol>(subject, ToBson(json), mustBeNested: true);
 
-            result.Should().BeSameAs(expectedResult);
+            result.Should().Be(expectedResult);
         }
 
         [TestCase("null", null)]
@@ -101,7 +101,7 @@ namespace MongoDB.Integrations.JsonDotNet.Tests.Converters
 
             var result = ReadJsonUsingWrappedJsonReader<BsonSymbol>(subject, json);
 
-            result.Should().BeSameAs(expectedResult);
+            result.Should().Be(expectedResult);
         }
 
         [Test]
