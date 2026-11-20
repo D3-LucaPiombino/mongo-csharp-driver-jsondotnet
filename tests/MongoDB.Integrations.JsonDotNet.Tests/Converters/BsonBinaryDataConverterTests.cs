@@ -168,7 +168,7 @@ namespace MongoDB.Integrations.JsonDotNet.Tests.Converters
         public void WriteJson_should_have_expected_result_when_using_wrapped_bson_writer(string nullableHexBytes, BsonBinarySubType subType, string expectedResult, GuidRepresentation resultGuidRepresentation)
         {
             var subject = new BsonBinaryDataConverter();
-            var value = nullableHexBytes == null ? null : new BsonBinaryData(BsonUtils.ParseHexString(nullableHexBytes), subType, resultGuidRepresentation);
+            var value = nullableHexBytes == null ? null : new BsonBinaryData(BsonUtils.ParseHexString(nullableHexBytes), subType);
 
             var result = WriteJsonUsingWrappedBsonWriter(subject, value, mustBeNested: true, guidRepresentation : resultGuidRepresentation);
 
@@ -178,12 +178,12 @@ namespace MongoDB.Integrations.JsonDotNet.Tests.Converters
         [TestCase(null, 0, "null", 0)]
         [TestCase("112233", BsonBinarySubType.Binary, "new BinData(0, \"ESIz\")", 0)]
         [TestCase("112233", BsonBinarySubType.UserDefined, "new BinData(128, \"ESIz\")", 0)]
-        [TestCase("112233445566778899aabbccddeeff00", BsonBinarySubType.UuidLegacy, "CSUUID(\"44332211-6655-8877-99aa-bbccddeeff00\")", GuidRepresentation.CSharpLegacy)]
+        [TestCase("112233445566778899aabbccddeeff00", BsonBinarySubType.UuidLegacy, "HexData(3, \"11223344-5566-7788-99aa-bbccddeeff00\")", GuidRepresentation.CSharpLegacy)]
         [TestCase("112233445566778899aabbccddeeff00", BsonBinarySubType.UuidStandard, "UUID(\"11223344-5566-7788-99aa-bbccddeeff00\")", GuidRepresentation.Standard)]
         public void WriteJson_should_have_expected_result_when_using_wrapped_json_writer(string nullableHexBytes, BsonBinarySubType subType, string expectedResult, GuidRepresentation resultGuidRepresentation)
         {
             var subject = new BsonBinaryDataConverter();
-            var value = nullableHexBytes == null ? null : new BsonBinaryData(BsonUtils.ParseHexString(nullableHexBytes), subType, resultGuidRepresentation);
+            var value = nullableHexBytes == null ? null : new BsonBinaryData(BsonUtils.ParseHexString(nullableHexBytes), subType);
 
             var result = WriteJsonUsingWrappedJsonWriter(subject, value);
 

@@ -25,15 +25,18 @@ namespace MongoDB.Integrations.JsonDotNet
         // private fields
         private readonly IBsonWriter _wrappedWriter;
         private readonly IPropertyNamesAdapter _propertyNameBinder;
+        private readonly GuidRepresentation _guidRepresentation;
 
         // constructors
         public BsonWriterAdapter(
             IBsonWriter wrappedWriter,
-            IPropertyNamesAdapter propertyNameBinder = null
+            IPropertyNamesAdapter propertyNameBinder = null,
+            GuidRepresentation? guidRepresentation = null
         )
         {
             _wrappedWriter = wrappedWriter;
             _propertyNameBinder = propertyNameBinder;
+            _guidRepresentation = guidRepresentation ?? JsonSerializerAdapter.DefaultGuidRepresentation;
         }
 
         // public properties
@@ -288,9 +291,7 @@ namespace MongoDB.Integrations.JsonDotNet
         public override void WriteValue(Guid value)
         {
             base.WriteValue(value);
-#pragma warning disable CS0618 // Type or member is obsolete
-            var binaryData = new BsonBinaryData(value, _wrappedWriter.Settings.GuidRepresentation);
-#pragma warning restore CS0618 // Type or member is obsolete
+            var binaryData = new BsonBinaryData(value, _guidRepresentation);
             _wrappedWriter.WriteBinaryData(binaryData);
         }
 

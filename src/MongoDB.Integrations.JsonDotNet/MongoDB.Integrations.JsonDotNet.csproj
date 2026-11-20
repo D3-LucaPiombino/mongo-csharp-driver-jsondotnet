@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.1;net472</TargetFrameworks>
     <AssemblyTitle>MongoDB.Integrations.JsonDotNet</AssemblyTitle>
     <Company>MongoDB, Inc.</Company>
     <Product>MongoDB.Integrations.JsonDotNet</Product>
@@ -34,7 +34,7 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="MongoDB.Bson" Version="2.30.0" />
+    <PackageReference Include="MongoDB.Bson" Version="3.14.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Newtonsoft.Json.Bson" Version="1.0.3" />
     

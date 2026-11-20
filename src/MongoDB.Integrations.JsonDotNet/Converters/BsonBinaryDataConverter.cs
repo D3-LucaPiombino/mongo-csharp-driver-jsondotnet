@@ -133,17 +133,7 @@ namespace MongoDB.Integrations.JsonDotNet.Converters
             }
             ReadEndObject(reader);
 
-            GuidRepresentation guidRepresentation;
-            switch (subType)
-            {
-                case BsonBinarySubType.UuidLegacy: guidRepresentation = GuidRepresentation.CSharpLegacy; break;
-                case BsonBinarySubType.UuidStandard: guidRepresentation = GuidRepresentation.Standard; break;
-                default: guidRepresentation = GuidRepresentation.Unspecified; break;
-            }
-
-#pragma warning disable CS0618 // Type or member is obsolete
-            return new BsonBinaryData(bytes, subType, guidRepresentation);
-#pragma warning restore CS0618 // Type or member is obsolete
+            return new BsonBinaryData(bytes, subType);
         }
 
         private void WriteExtendedJson(Newtonsoft.Json.JsonWriter writer, BsonBinaryData binaryData, Newtonsoft.Json.JsonSerializer serializer)

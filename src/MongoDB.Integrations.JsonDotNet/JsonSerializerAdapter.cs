@@ -71,8 +71,21 @@ namespace MongoDB.Integrations.JsonDotNet
         class Node : Node<JsonSerializer> { }
 
 
+        private static volatile GuidRepresentation _defaultGuidRepresentation = GuidRepresentation.Standard;
+
         /// <summary>
-        /// 
+        /// Gets or sets the <see cref="GuidRepresentation"/> used to read and write <see cref="Guid"/> values
+        /// when an adapter is not given one explicitly. The MongoDB driver 3.x no longer exposes it on the
+        /// readers and writers, so it is configured here. The default is <see cref="GuidRepresentation.Standard"/>.
+        /// </summary>
+        public static GuidRepresentation DefaultGuidRepresentation
+        {
+            get { return _defaultGuidRepresentation; }
+            set { _defaultGuidRepresentation = value; }
+        }
+
+        /// <summary>
+        ///
         /// </summary>
         /// <returns></returns>
         public static JsonSerializer GetCurrent() => Node.Current;
@@ -110,6 +123,7 @@ namespace MongoDB.Integrations.JsonDotNet
         IBsonDocumentSerializer
     {
         private readonly JsonSerializer _wrappedSerializer;
+        private readonly GuidRepresentation? _guidRepresentation;
 
         // private fields
         private JsonSerializer WrappedSerializer => JsonSerializerAdapter.GetCurrent() ?? _wrappedSerializer;
@@ -135,6 +149,21 @@ namespace MongoDB.Integrations.JsonDotNet
             _wrappedSerializer = wrappedSerializer ?? throw new ArgumentNullException("wrappedSerializer");
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="JsonSerializerAdapter{TValue}"/> class
+        /// with an explicit <see cref="GuidRepresentation"/>.
+        /// </summary>
+        /// <param name="wrappedSerializer">The wrapped serializer.</param>
+        /// <param name="guidRepresentation">The representation used for <see cref="Guid"/> values.</param>
+        public JsonSerializerAdapter(
+            JsonSerializer wrappedSerializer,
+            GuidRepresentation guidRepresentation
+        )
+            : this(wrappedSerializer)
+        {
+            _guidRepresentation = guidRepresentation;
+        }
+
         // public methods
         /// <inheritdoc/>
         public override TValue Deserialize(BsonDeserializationContext context, BsonDeserializationArgs args)
@@ -144,7 +173,8 @@ namespace MongoDB.Integrations.JsonDotNet
 
             var readerAdapter = new BsonReaderAdapter(
                 context.Reader,
-                serializer.SerializationBinder as IPropertyNamesAdapter
+                serializer.SerializationBinder as IPropertyNamesAdapter,
+                _guidRepresentation
             );
             return (TValue)serializer.Deserialize(readerAdapter, args.NominalType);
         }
@@ -155,7 +185,8 @@ namespace MongoDB.Integrations.JsonDotNet
             var serializer = WrappedSerializer;
             var writerAdapter = new BsonWriterAdapter(
                 context.Writer,
-                serializer.SerializationBinder as IPropertyNamesAdapter
+                serializer.SerializationBinder as IPropertyNamesAdapter,
+                _guidRepresentation
             );
             serializer.Serialize(writerAdapter, value, args.NominalType);
         }
