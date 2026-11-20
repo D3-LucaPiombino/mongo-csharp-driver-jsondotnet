@@ -9,7 +9,7 @@ It is a standalone project that has an external dependency on the MongoDB .NET D
 Compatibility
 -------------
 
-This version targets the MongoDB .NET Driver 3.x (`MongoDB.Bson` 3.14.1) on `netstandard2.1` and `net472`.
+This version targets the MongoDB .NET Driver 3.x (`MongoDB.Bson` 3.14.1) on `net10.0` (SDK 10 or later).
 
 ### Guid representation
 
